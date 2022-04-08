@@ -43,7 +43,7 @@ class Airport(models.Model):
 
         self.point_standard = Point(s_lng, s_lat)
         self.point_radian = Point(r_lng, r_lat)
-        super(Job, self).save(*args, **kwargs)
+        super(Airport, self).save(*args, **kwargs)
 
 
 class Plane(models.Model):

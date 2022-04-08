@@ -43,10 +43,13 @@ services:
   db:
     container_name: db
     image: postgis/postgis
+    volumes:
+      - psqldata:/var/lib/postgresql/data
     env_file:
       - .env.dev
 
 volumes:
+  psqldata:
   run_vol:
     driver_opts:
       type: tmpfs
