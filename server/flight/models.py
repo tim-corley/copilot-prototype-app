@@ -1,5 +1,3 @@
-from django.forms import FloatField
-import geocoder
 from datetime import datetime
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -73,8 +71,8 @@ class Duty(models.Model):
     end_hobbs = models.FloatField(null=True)
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
-    leg = models.ForeignKey('Leg', on_delete=models.SET_NULL, null=True)
-    receipt = models.ForeignKey('Receipt', on_delete=models.SET_NULL, null=True)
+    leg = models.ForeignKey('Leg', related_name='dutyleg', on_delete=models.SET_NULL, null=True)
+    receipt = models.ForeignKey('Receipt', related_name='dutyreceipt', on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -82,10 +80,10 @@ class Duty(models.Model):
 
 class Leg(models.Model):
     depart_time = models.DateTimeField(null=True)
-    depart_location = models.ForeignKey(Airport, on_delete=models.SET_NULL, null=True)
+    depart_location = models.ForeignKey(Airport, related_name='legdepartlocation', on_delete=models.SET_NULL, null=True)
     arrival_time = models.DateTimeField(null=True)
-    arrival_location = models.ForeignKey(Airport, on_delete=models.SET_NULL, null=True)
-    duty = models.ForeignKey(Duty, on_delete=models.SET_NULL, null=True)
+    arrival_location = models.ForeignKey(Airport, related_name='legarrivallocation', on_delete=models.SET_NULL, null=True)
+    duty = models.ForeignKey(Duty, related_name='legduty', on_delete=models.SET_NULL, null=True)
     plane = models.ForeignKey(Plane, on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
@@ -94,7 +92,7 @@ class Leg(models.Model):
 
 class Receipt(models.Model):
     image_url = models.FileField(null=True)
-    duty = models.ForeignKey(Duty, on_delete=models.SET_NULL, null=True)
+    duty = models.ForeignKey(Duty, related_name='receiptduty', on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

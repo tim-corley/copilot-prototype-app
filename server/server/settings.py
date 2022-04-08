@@ -38,11 +38,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.gis",
     "whitenoise.runserver_nostatic",
     "corsheaders",
     "rest_framework",
     "djoser",
     "drf_yasg",
+    "flight.apps.FlightConfig",
 ]
 
 MIDDLEWARE = [

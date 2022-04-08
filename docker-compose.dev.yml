@@ -42,7 +42,7 @@ services:
 
   db:
     container_name: db
-    image: postgres
+    image: postgis/postgis
     env_file:
       - .env.dev
 
