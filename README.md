@@ -85,3 +85,25 @@ API documentation is done using swagger. Visit `/swagger` for API documentation.
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
+## Dev Notes
+
+### Steps to Create / Update Models
+
+1. Add models to <MY_APP>/models.py
+2. Register the app in server/settings.py
+3. Register model classe to admin in <MY_APP>/admin.py
+4. Launch containers with docker-compose
+5. Access the server container using `$ docker exec -it <CONTAINER-ID> bash`
+6. Run migrations (`$ python manage.py makemigrations` & `$ python manage.py migrate`)
+7. Input test data:
+
+```
+root@1f9482e255eb:/src# python
+Python 3.9.12 (main, Mar 29 2022, 14:20:48)
+[GCC 10.2.1 20210110] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import django
+>>> django.setup()
+>>> from flight.models import Airport, Plane, Duty, Leg, Receipt
+```
