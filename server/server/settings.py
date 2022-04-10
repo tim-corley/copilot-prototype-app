@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    'django_filters',
     "whitenoise.runserver_nostatic",
     "corsheaders",
     "rest_framework",
