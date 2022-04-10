@@ -47,8 +47,8 @@ class Airport(models.Model):
 
 
 class Plane(models.Model):
-    registration = models.CharField(max_length=5)
-    model = models.CharField(max_length=100)
+    registration = models.CharField(max_length=200)
+    model = models.CharField(max_length=200)
     year = models.IntegerField(default=current_year, validators=[MinValueValidator(1903), MaxValueValidator(current_year)])
     current_status = models.CharField(
         max_length=12,
