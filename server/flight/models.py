@@ -56,7 +56,7 @@ class Plane(models.Model):
         default=PlaneStatus.Available
     )
     current_location = models.ForeignKey(Airport, on_delete=models.SET_NULL, null=True)
-    image_url = models.URLField(null=True)
+    file_handle = models.FileField(null=True, default='')
     owner_email = models.EmailField(null=True)
     hobbs_time = models.FloatField()
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -72,7 +72,7 @@ class Duty(models.Model):
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
     leg = models.ForeignKey('Leg', related_name='dutyleg', on_delete=models.SET_NULL, null=True)
-    receipt = models.ForeignKey('Receipt', related_name='dutyreceipt', on_delete=models.SET_NULL, null=True)
+    receipt = models.ForeignKey('Receipt', related_name='dutyreceipt', on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -85,14 +85,16 @@ class Leg(models.Model):
     arrival_location = models.ForeignKey(Airport, related_name='legarrivallocation', on_delete=models.SET_NULL, null=True)
     duty = models.ForeignKey(Duty, related_name='legduty', on_delete=models.SET_NULL, null=True)
     plane = models.ForeignKey(Plane, on_delete=models.SET_NULL, null=True)
+    receipt = models.ForeignKey('Receipt', related_name='legreceipt', on_delete=models.CASCADE, null=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
 class Receipt(models.Model):
-    image_url = models.FileField(null=True)
+    file_handle = models.FileField(null=False, default='')
     duty = models.ForeignKey(Duty, related_name='receiptduty', on_delete=models.SET_NULL, null=True)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)    
+    leg = models.ForeignKey(Leg, related_name='receiptleg', on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

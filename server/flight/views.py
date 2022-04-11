@@ -12,6 +12,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.contrib.gis.db.models.functions import Distance
 from .filters import AirportsFilter
+from .validators import validate_img_file_extention
 from .serializer import AirportSerializer, AirportLocatorSerializer, PlaneSerializer, DutySerializer, LegSerializer, ReceiptSerializer
 from .models import Airport, Plane, Duty, Leg, Receipt
 
@@ -59,3 +60,28 @@ def getClosestAirports(request):
     return Response({
         'closest_airports': serializer.data
     })
+
+# =======
+# RECEIPT
+# =======
+
+# TODO: currently broken, requires user, duty, and leg resources to be created
+@api_view(['PUT'])
+def uploadReceipt(request):
+
+    receipt = request.FILES['receipt']
+
+    print(f"\n RECEIPT: {receipt}")
+
+    if receipt == '':
+        return Response({'error': 'Please upload your receipt.'})
+
+    isValidFile = validate_img_file_extention(receipt.name)
+
+    if not isValidFile:
+        return Response({'error': 'Please ensure file is common image type (i.e. JPG, PNG).'}, status=status.HTTP_400_BAD_REQUEST)
+
+    print("\nHERE\n")
+    serializer = ReceiptSerializer(receipt, many=False)
+
+    return Response(serializer.data)
