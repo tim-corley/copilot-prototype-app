@@ -46,4 +46,9 @@ urlpatterns += [
     # Auth endpoints
     url(r'^auth/', include('djoser.urls')),
     url(r'^auth/', include('djoser.urls.jwt')),
+    # Flight endpoints
+    path('flight/', include('flight.urls')),
 ]
+
+# handler404 = 'utils.error_views.handler404'
+# handler500 = 'utils.error_views.handler500'
