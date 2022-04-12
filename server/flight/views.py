@@ -74,7 +74,18 @@ def createDuty(request):
     
     return Response(serializer.data)
 
-
+# =======
+# LEG
+# =======
+@api_view(['POST'])
+def createLeg(request):
+    request.data['user'] = request.user
+    data = request.data
+    leg = Leg.objects.create(**data)
+    
+    serializer = LegSerializer(leg, many=False)
+    
+    return Response(serializer.data)
 
 # =======
 # RECEIPT

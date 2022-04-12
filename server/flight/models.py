@@ -1,3 +1,4 @@
+from email.policy import default
 from django.conf import settings
 from datetime import datetime
 from django.db import models
@@ -60,6 +61,7 @@ class Plane(models.Model):
     file_handle = models.FileField(null=True, default='')
     owner_email = models.EmailField(null=True)
     hobbs_time = models.FloatField()
+    # legs = models.ForeignKey('Leg', on_delete=models.CASCADE, related_name='planes', null=True, default='')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -72,8 +74,7 @@ class Duty(models.Model):
     end_hobbs = models.FloatField(null=True)
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
-    leg = models.ForeignKey('Leg', related_name='dutyleg', on_delete=models.SET_NULL, null=True)
-    receipt = models.ForeignKey('Receipt', related_name='dutyreceipt', on_delete=models.CASCADE, null=True)
+    # legs = models.ForeignKey('Leg', related_name='duty', on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -81,12 +82,12 @@ class Duty(models.Model):
 
 class Leg(models.Model):
     depart_time = models.DateTimeField(null=True)
-    depart_location = models.ForeignKey(Airport, related_name='legdepartlocation', on_delete=models.SET_NULL, null=True)
+    depart_location = models.ForeignKey(Airport, related_name='departairport', on_delete=models.SET_NULL, null=True)
     arrival_time = models.DateTimeField(null=True)
-    arrival_location = models.ForeignKey(Airport, related_name='legarrivallocation', on_delete=models.SET_NULL, null=True)
-    duty = models.ForeignKey(Duty, related_name='legduty', on_delete=models.SET_NULL, null=True)
-    plane = models.ForeignKey(Plane, on_delete=models.SET_NULL, null=True)
-    receipt = models.ForeignKey('Receipt', related_name='legreceipt', on_delete=models.CASCADE, null=True)
+    arrival_location = models.ForeignKey(Airport, related_name='arrivalairport', on_delete=models.SET_NULL, null=True)
+    duty = models.ForeignKey(Duty, on_delete=models.CASCADE, related_name='legs', null=False, default='')
+    # plane = models.ForeignKey(Plane, related_name='legplane', on_delete=models.SET_NULL, null=False)
+    receipt = models.ForeignKey('Receipt', on_delete=models.SET_NULL, related_name='legreceipt', null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -94,8 +95,7 @@ class Leg(models.Model):
 
 class Receipt(models.Model):
     file_handle = models.FileField(null=False, default='')
-    duty = models.ForeignKey(Duty, related_name='receiptduty', on_delete=models.SET_NULL, null=True)
-    leg = models.ForeignKey(Leg, related_name='receiptleg', on_delete=models.SET_NULL, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    leg = models.OneToOneField(Leg, related_name='receipts', on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

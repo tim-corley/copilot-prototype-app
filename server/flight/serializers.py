@@ -25,18 +25,39 @@ class PlaneSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DutySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Duty
-        fields = '__all__'
-
-
-class LegSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Leg
-        fields = '__all__'
-
 class ReceiptSerializer(serializers.ModelSerializer):
     class Meta:
         model = Receipt
         fields = '__all__'
+
+
+class LegSerializer(serializers.ModelSerializer):
+    planes = PlaneSerializer(many=False)
+    receipts = ReceiptSerializer(many=True)
+    class Meta:
+        model = Leg
+        # fields = ['depart_time', 'depart_location', 'duty', 'user', 'created_at']
+        fields = ['depart_location']
+
+    def create(self, validated_data):
+        """
+        Overriding the default create method of the Model serializer.
+        :param validated_data: data containing all the details of student
+        :return: returns a successfully created student record
+        """
+        depart_location_data = validated_data.pop('depart_location')
+        depart_location = AirportSerializer.create(AirportSerializer(), validated_data=depart_location_data)
+        print(f"\nTEST LOCATION: {depart_location}")
+        depart, created = Leg.objects.update_or_create(depart_location=depart_location)
+        return depart
+
+
+class DutySerializer(serializers.ModelSerializer):
+    legs = LegSerializer(many=True)
+    class Meta:
+        model = Duty
+        fields = ['id', 'created_at', 'oil_add', 'start_hobbs', 'legs']
+
+
+
+
