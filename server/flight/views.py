@@ -13,7 +13,7 @@ from django.contrib.gis.measure import D
 from django.contrib.gis.db.models.functions import Distance
 from .filters import AirportsFilter
 from .validators import validate_img_file_extention
-from .serializer import AirportSerializer, AirportLocatorSerializer, PlaneSerializer, DutySerializer, LegSerializer, ReceiptSerializer
+from .serializers import AirportSerializer, AirportLocatorSerializer, PlaneSerializer, DutySerializer, LegSerializer, ReceiptSerializer
 from .models import Airport, Plane, Duty, Leg, Receipt
 
 

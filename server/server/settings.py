@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+from datetime import timedelta
 import os
 from pathlib import Path
 
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     "djoser",
     "drf_yasg",
     "flight.apps.FlightConfig",
+    "accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [
@@ -96,6 +98,16 @@ DATABASES = {
     }
 }
 
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+# EMAIL CONFIG
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "localhost"
+EMAIL_PORT = "1025"
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = ""
+EMAIL_USE_TLS = False
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -129,7 +141,10 @@ USE_L10N = True
 
 USE_TZ = True
 
+# CORS HEADERS
 CORS_ALLOW_ALL_ORIGINS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -143,15 +158,44 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SIMPLE_JWT = {
-    "AUTH_HEADER_TYPES": ("JWT",),
-}
-
-# Rest Framework Settings
 REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+}
+
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("JWT",),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
+
+# DJOSER CONFIG
+DJOSER = {
+    "LOGIN_FIELD": "email",
+    "USER_CREATE_PASSWORD_RETYPE": True,
+    "USERNAME_CHANGED_EMAIL_CONFIRMATION": True,
+    "PASSWORD_CHANGED_EMAIL_CONFIRMATION": True,
+    "SEND_CONFIRMATION_EMAIL": True,
+    "SET_USERNAME_RETYPE": True,
+    "SET_PASSWORD_RETYPE": True,
+    "USERNAME_RESET_CONFIRM_URL": "password/reset/confirm/{uid}/{token}",
+    "PASSWORD_RESET_CONFIRM_URL": "email/reset/confirm/{uid}/{token}",
+    "ACTIVATION_URL": "activate/{uid}/{token}",
+    "SEND_ACTIVATION_EMAIL": True,
+    "SOCIAL_AUTH_TOKEN_STRATEGY": "djoser.social.token.jwt.TokenStrategy",
+    "SOCIAL_AUTH_ALLOWED_REDIRECT_URIS": [
+        "your redirect url",
+        "your redirect url",
+    ],
+    "SERIALIZERS": {
+        "user_create": "accounts.serializers.UserCreateSerializer",  # custom serializer
+        "user": "djoser.serializers.UserSerializer",
+        "current_user": "djoser.serializers.UserSerializer",
+        "user_delete": "djoser.serializers.UserSerializer",
+    },
 }
 
 SWAGGER_SETTINGS = {
