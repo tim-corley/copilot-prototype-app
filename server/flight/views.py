@@ -62,6 +62,21 @@ def getClosestAirports(request):
     })
 
 # =======
+# DUTY
+# =======
+@api_view(['POST'])
+def createDuty(request):
+    request.data['user'] = request.user
+    data = request.data
+    duty = Duty.objects.create(**data)
+    
+    serializer = DutySerializer(duty, many=False)
+    
+    return Response(serializer.data)
+
+
+
+# =======
 # RECEIPT
 # =======
 
