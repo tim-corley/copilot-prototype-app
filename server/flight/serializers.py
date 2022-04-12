@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Airport, Plane, Duty, Leg, Receipt
+from accounts.serializers import UserCreateSerializer
 
 class AirportSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,39 +26,27 @@ class PlaneSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ReceiptSerializer(serializers.ModelSerializer):
+class LegSerializer(serializers.ModelSerializer):
+    depart_location = AirportSerializer(many=False, read_only=True)
+    plane = PlaneSerializer(many=False, read_only=True)
+    added_by = UserCreateSerializer(many=False, read_only=True)
     class Meta:
-        model = Receipt
+        model = Leg
         fields = '__all__'
 
 
-class LegSerializer(serializers.ModelSerializer):
-    planes = PlaneSerializer(many=False)
-    receipts = ReceiptSerializer(many=True)
-    class Meta:
-        model = Leg
-        # fields = ['depart_time', 'depart_location', 'duty', 'user', 'created_at']
-        fields = ['depart_location']
-
-    def create(self, validated_data):
-        """
-        Overriding the default create method of the Model serializer.
-        :param validated_data: data containing all the details of student
-        :return: returns a successfully created student record
-        """
-        depart_location_data = validated_data.pop('depart_location')
-        depart_location = AirportSerializer.create(AirportSerializer(), validated_data=depart_location_data)
-        print(f"\nTEST LOCATION: {depart_location}")
-        depart, created = Leg.objects.update_or_create(depart_location=depart_location)
-        return depart
-
-
 class DutySerializer(serializers.ModelSerializer):
-    legs = LegSerializer(many=True)
+    legs = LegSerializer(many=True, read_only=True)
     class Meta:
         model = Duty
-        fields = ['id', 'created_at', 'oil_add', 'start_hobbs', 'legs']
+        fields = '__all__'
 
 
+class ReceiptSerializer(serializers.ModelSerializer):
+    # added_by = UserCreateSerializer(many=False, read_only=True)
+    # duty = DutySerializer(many=False, read_only=True)
+    class Meta:
+        model = Receipt
+        fields = '__all__'
 
 

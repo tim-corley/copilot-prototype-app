@@ -66,7 +66,7 @@ def getClosestAirports(request):
 # =======
 @api_view(['POST'])
 def createDuty(request):
-    request.data['user'] = request.user
+    request.data['added_by'] = request.user
     data = request.data
     duty = Duty.objects.create(**data)
     
@@ -79,8 +79,16 @@ def createDuty(request):
 # =======
 @api_view(['POST'])
 def createLeg(request):
-    request.data['user'] = request.user
+
+    request.data['added_by'] = request.user
     data = request.data
+
+    depart_location = Airport.objects.get(id=data["depart_location"])
+    duty = Duty.objects.get(id=data["duty"])
+    plane = Plane.objects.get(id=data["plane"])
+
+    data = {**data, "depart_location": depart_location, "duty": duty, "plane": plane}
+
     leg = Leg.objects.create(**data)
     
     serializer = LegSerializer(leg, many=False)
@@ -91,13 +99,10 @@ def createLeg(request):
 # RECEIPT
 # =======
 
-# TODO: currently broken, requires user, duty, and leg resources to be created
-@api_view(['PUT'])
+@api_view(['POST'])
 def uploadReceipt(request):
 
-    receipt = request.FILES['receipt']
-
-    print(f"\n RECEIPT: {receipt}")
+    receipt = request.FILES['img_file']
 
     if receipt == '':
         return Response({'error': 'Please upload your receipt.'})
@@ -107,7 +112,14 @@ def uploadReceipt(request):
     if not isValidFile:
         return Response({'error': 'Please ensure file is common image type (i.e. JPG, PNG).'}, status=status.HTTP_400_BAD_REQUEST)
 
-    print("\nHERE\n")
+    data = request.data
+    duty = Duty.objects.get(id=data["duty"])
+    file_handle = receipt
+
+    data = {"file_handle": file_handle, "duty": duty, "added_by": request.user}
+
+    receipt = Receipt.objects.create(**data)
+
     serializer = ReceiptSerializer(receipt, many=False)
 
     return Response(serializer.data)

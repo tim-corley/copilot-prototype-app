@@ -61,21 +61,14 @@ class Plane(models.Model):
     file_handle = models.FileField(null=True, default='')
     owner_email = models.EmailField(null=True)
     hobbs_time = models.FloatField()
-    # legs = models.ForeignKey('Leg', on_delete=models.CASCADE, related_name='planes', null=True, default='')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    duty = models.ForeignKey('Duty', on_delete=models.SET_NULL, null=True)
 
-
-class Duty(models.Model):
-    oil_add = models.FloatField(null=True)
-    start_hobbs = models.FloatField(null=True)
-    end_hobbs = models.FloatField(null=True)
-    start_time = models.DateTimeField(null=True)
-    end_time = models.DateTimeField(null=True)
-    # legs = models.ForeignKey('Leg', related_name='duty', on_delete=models.SET_NULL, null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
+class Receipt(models.Model):
+    file_handle = models.FileField(null=False, default='')
+    duty = models.ForeignKey('Duty', related_name='receiptduty', default=1, on_delete=models.CASCADE, null=False)
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -85,17 +78,20 @@ class Leg(models.Model):
     depart_location = models.ForeignKey(Airport, related_name='departairport', on_delete=models.SET_NULL, null=True)
     arrival_time = models.DateTimeField(null=True)
     arrival_location = models.ForeignKey(Airport, related_name='arrivalairport', on_delete=models.SET_NULL, null=True)
-    duty = models.ForeignKey(Duty, on_delete=models.CASCADE, related_name='legs', null=False, default='')
-    # plane = models.ForeignKey(Plane, related_name='legplane', on_delete=models.SET_NULL, null=False)
-    receipt = models.ForeignKey('Receipt', on_delete=models.SET_NULL, related_name='legreceipt', null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
+    plane = models.ForeignKey(Plane, related_name='legplane', on_delete=models.SET_NULL, null=True)
+    duty = models.ForeignKey('Duty', related_name='legduty', default=1, on_delete=models.CASCADE, null=False)
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class Receipt(models.Model):
-    file_handle = models.FileField(null=False, default='')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    leg = models.OneToOneField(Leg, related_name='receipts', on_delete=models.CASCADE, null=True)
+class Duty(models.Model):
+    oil_add = models.FloatField(null=True)
+    start_hobbs = models.FloatField(null=True)
+    end_hobbs = models.FloatField(null=True)
+    start_time = models.DateTimeField(null=True)
+    end_time = models.DateTimeField(null=True)
+    legs = models.ForeignKey(Leg, related_name='dutylegs', on_delete=models.SET_NULL, null=True)
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
