@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils import timezone
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
@@ -15,6 +16,7 @@ from .filters import AirportsFilter, PlanesFilter
 from .validators import validate_img_file_extention
 from .serializers import AirportSerializer, AirportLocatorSerializer, PlaneSerializer, DutySerializer, LegSerializer, ReceiptSerializer
 from .models import Airport, Plane, Duty, Leg, Receipt
+from .custom_storages import ReceiptStorage, PlaneStorage
 
 
 # =======
@@ -82,6 +84,37 @@ def create_airport(request):
     
     return Response(serializer.data)
 
+@api_view(['PUT'])
+def update_airport(request, pk):
+    airport = get_object_or_404(Airport, id=pk)
+
+    if airport.added_by != request.user:
+        return Response({'message': 'You do not have permission to update this airport.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    airport.icao = request.data['icao']
+    airport.state = request.data['state']
+    airport.facility_name = request.data['facility_name']
+    airport.lat_standard = request.data['lat_standard']
+    airport.lat_radian = request.data['lat_radian']
+    airport.lon_standard = request.data['lon_standard']
+    airport.lon_radian = request.data['lon_radian']
+    
+    airport.save()
+    
+    serializer = AirportSerializer(airport, many=False)
+    
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+def delete_airport(request, pk):
+    airport = get_object_or_404(Airport, id=pk)
+
+    if airport.added_by != request.user:
+        return Response({'message': 'You do not have permission to remove this airport.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    airport.delete()
+    
+    return Response({ 'message': 'Airport has successfully been deleted.' }, status=status.HTTP_200_OK)
 
 # =======
 # PLANE
@@ -133,6 +166,41 @@ def create_plane(request):
     serializer = PlaneSerializer(plane, many=False)
     
     return Response(serializer.data)
+
+@api_view(['PUT'])
+def update_plane(request, pk):
+    plane = get_object_or_404(Plane, id=pk)
+
+    if plane.added_by != request.user:
+        return Response({'message': 'You do not have permission to update this plane.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    current_location = Airport.objects.get(id=request.data["current_location"])
+
+    plane.registration = request.data['registration']
+    plane.model = request.data['model']
+    plane.year = request.data['year']
+    plane.current_status = request.data['current_status']
+    plane.current_location = current_location
+    plane.img_file_handle = request.data['img_file_handle']
+    plane.owner_email = request.data['owner_email']
+    plane.hobbs_time = request.data['hobbs_time']
+    
+    plane.save()
+    
+    serializer = PlaneSerializer(plane, many=False)
+    
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+def delete_plane(request, pk):
+    plane = get_object_or_404(Plane, id=pk)
+
+    if plane.added_by != request.user:
+        return Response({'message': 'You do not have permission to remove this plane.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    plane.delete()
+    
+    return Response({ 'message': 'Plane has successfully been deleted.' }, status=status.HTTP_200_OK)
 
 # =======
 # DUTY
@@ -190,11 +258,13 @@ def upload_receipt(request):
     if not isValidFile:
         return Response({'error': 'Please ensure file is common image type (i.e. JPG, PNG).'}, status=status.HTTP_400_BAD_REQUEST)
 
+    full_s3_bucket_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{ReceiptStorage.location}/" 
+
     data = request.data
     duty = Duty.objects.get(id=data["duty"])
     img_file_handle = receipt
 
-    data = {"img_file_handle": img_file_handle, "duty": duty, "added_by": request.user}
+    data = {"img_file_handle": full_s3_bucket_url + str(img_file_handle), "duty": duty, "added_by": request.user}
 
     receipt = Receipt.objects.create(**data)
 
