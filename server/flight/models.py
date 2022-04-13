@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models as gismodels
 from django.contrib.gis.geos import Point
+from .custom_storages import ReceiptStorage, PlaneStorage
 
 current_year = datetime.now().year
 
@@ -34,6 +35,7 @@ class Airport(models.Model):
     lon_radian = models.FloatField()
     point_standard = gismodels.PointField(default=Point(0.0, 0.0))
     point_radian = gismodels.PointField(default=Point(0.0, 0.0))
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
     def save(self, *args, **kwargs):
 
@@ -57,13 +59,31 @@ class Plane(models.Model):
         default=PlaneStatus.Available
     )
     current_location = models.ForeignKey(Airport, on_delete=models.SET_NULL, null=True)
-    file_handle = models.FileField(null=True, default='')
+    img_file_handle = models.FileField(null=True, default='', storage=PlaneStorage())
     owner_email = models.EmailField(null=True)
     hobbs_time = models.FloatField()
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    duty = models.ForeignKey('Duty', on_delete=models.SET_NULL, null=True)
+
+class Receipt(models.Model):
+    img_file_handle = models.FileField(null=False, default='', storage=ReceiptStorage())
+    duty = models.ForeignKey('Duty', related_name='receiptduty', default=1, on_delete=models.CASCADE, null=False)
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class Leg(models.Model):
+    depart_time = models.DateTimeField(null=True)
+    depart_location = models.ForeignKey(Airport, related_name='departairport', on_delete=models.SET_NULL, null=True)
+    arrival_time = models.DateTimeField(null=True)
+    arrival_location = models.ForeignKey(Airport, related_name='arrivalairport', on_delete=models.SET_NULL, null=True)
+    plane = models.ForeignKey(Plane, related_name='legplane', on_delete=models.SET_NULL, null=True)
+    duty = models.ForeignKey('Duty', related_name='legduty', default=1, on_delete=models.CASCADE, null=False)
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Duty(models.Model):
@@ -72,30 +92,7 @@ class Duty(models.Model):
     end_hobbs = models.FloatField(null=True)
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
-    leg = models.ForeignKey('Leg', related_name='dutyleg', on_delete=models.SET_NULL, null=True)
-    receipt = models.ForeignKey('Receipt', related_name='dutyreceipt', on_delete=models.CASCADE, null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
-class Leg(models.Model):
-    depart_time = models.DateTimeField(null=True)
-    depart_location = models.ForeignKey(Airport, related_name='legdepartlocation', on_delete=models.SET_NULL, null=True)
-    arrival_time = models.DateTimeField(null=True)
-    arrival_location = models.ForeignKey(Airport, related_name='legarrivallocation', on_delete=models.SET_NULL, null=True)
-    duty = models.ForeignKey(Duty, related_name='legduty', on_delete=models.SET_NULL, null=True)
-    plane = models.ForeignKey(Plane, on_delete=models.SET_NULL, null=True)
-    receipt = models.ForeignKey('Receipt', related_name='legreceipt', on_delete=models.CASCADE, null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
-class Receipt(models.Model):
-    file_handle = models.FileField(null=False, default='')
-    duty = models.ForeignKey(Duty, related_name='receiptduty', on_delete=models.SET_NULL, null=True)
-    leg = models.ForeignKey(Leg, related_name='receiptleg', on_delete=models.SET_NULL, null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    legs = models.ForeignKey(Leg, related_name='dutylegs', on_delete=models.SET_NULL, null=True)
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
