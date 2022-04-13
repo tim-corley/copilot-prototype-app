@@ -1,4 +1,3 @@
-from email.policy import default
 from django.conf import settings
 from datetime import datetime
 from django.db import models
@@ -6,6 +5,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models as gismodels
 from django.contrib.gis.geos import Point
+from .custom_storages import ReceiptStorage, PlaneStorage
 
 current_year = datetime.now().year
 
@@ -58,7 +58,7 @@ class Plane(models.Model):
         default=PlaneStatus.Available
     )
     current_location = models.ForeignKey(Airport, on_delete=models.SET_NULL, null=True)
-    file_handle = models.FileField(null=True, default='')
+    img_file_handle = models.FileField(null=True, default='', storage=PlaneStorage())
     owner_email = models.EmailField(null=True)
     hobbs_time = models.FloatField()
     added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
@@ -66,7 +66,7 @@ class Plane(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 class Receipt(models.Model):
-    file_handle = models.FileField(null=False, default='')
+    img_file_handle = models.FileField(null=False, default='', storage=ReceiptStorage())
     duty = models.ForeignKey('Duty', related_name='receiptduty', default=1, on_delete=models.CASCADE, null=False)
     added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

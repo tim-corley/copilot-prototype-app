@@ -114,9 +114,9 @@ def uploadReceipt(request):
 
     data = request.data
     duty = Duty.objects.get(id=data["duty"])
-    file_handle = receipt
+    img_file_handle = receipt
 
-    data = {"file_handle": file_handle, "duty": duty, "added_by": request.user}
+    data = {"img_file_handle": img_file_handle, "duty": duty, "added_by": request.user}
 
     receipt = Receipt.objects.create(**data)
 
