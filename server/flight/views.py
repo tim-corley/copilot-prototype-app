@@ -11,7 +11,7 @@ from django.contrib.gis.geos import fromstr
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.contrib.gis.db.models.functions import Distance
-from .filters import AirportsFilter
+from .filters import AirportsFilter, PlanesFilter
 from .validators import validate_img_file_extention
 from .serializers import AirportSerializer, AirportLocatorSerializer, PlaneSerializer, DutySerializer, LegSerializer, ReceiptSerializer
 from .models import Airport, Plane, Duty, Leg, Receipt
@@ -61,9 +61,38 @@ def getClosestAirports(request):
         'closest_airports': serializer.data
     })
 
+
+# =======
+# PLANE
+# =======
+
+@api_view(['GET'])
+def getAllPlanes(request):
+    
+    filterset = PlanesFilter(request.GET, queryset=Plane.objects.all().order_by('id'))
+    
+    count = filterset.qs.count()
+
+    # Pagination
+    resPerPage = 5
+    paginator = PageNumberPagination()
+    paginator.page_size = resPerPage
+
+    queryset = paginator.paginate_queryset(filterset.qs, request)
+
+    serializer = PlaneSerializer(queryset, many=True)
+    
+    return Response({
+        'count': count,
+        'resPerPage': resPerPage,
+        'planes': serializer.data
+    })
+
+
 # =======
 # DUTY
 # =======
+
 @api_view(['POST'])
 def createDuty(request):
     request.data['added_by'] = request.user
@@ -74,9 +103,11 @@ def createDuty(request):
     
     return Response(serializer.data)
 
+
 # =======
 # LEG
 # =======
+
 @api_view(['POST'])
 def createLeg(request):
 
