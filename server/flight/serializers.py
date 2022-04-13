@@ -17,7 +17,7 @@ class AirportLocatorSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Airport
-        fields = ('icao', 'facility_name', 'state', 'distance')
+        fields = ('id', 'icao', 'facility_name', 'state', 'distance')
 
 
 class PlaneSerializer(serializers.ModelSerializer):

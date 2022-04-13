@@ -22,7 +22,7 @@ from .models import Airport, Plane, Duty, Leg, Receipt
 # =======
 
 @api_view(['GET'])
-def getAllAirports(request):
+def get_all_airports(request):
     
     filterset = AirportsFilter(request.GET, queryset=Airport.objects.all().order_by('id'))
     
@@ -45,7 +45,7 @@ def getAllAirports(request):
 
 
 @api_view(['GET'])
-def getClosestAirports(request):
+def get_closest_airports(request):
 
     longitude = float(request.query_params.get('longitude'))
     latitude = float(request.query_params.get('latitude'))
@@ -61,13 +61,34 @@ def getClosestAirports(request):
         'closest_airports': serializer.data
     })
 
+@api_view(['GET'])
+def get_airport(request, pk):
+
+    airport = get_object_or_404(Airport, id=pk)
+    
+    serializer = AirportSerializer(airport, many=False)
+    
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def create_airport(request):
+
+    request.data['added_by'] = request.user
+    data = request.data
+
+    airport = Airport.objects.create(**data)
+    
+    serializer = AirportSerializer(airport, many=False)
+    
+    return Response(serializer.data)
+
 
 # =======
 # PLANE
 # =======
 
 @api_view(['GET'])
-def getAllPlanes(request):
+def get_all_planes(request):
     
     filterset = PlanesFilter(request.GET, queryset=Plane.objects.all().order_by('id'))
     
@@ -88,15 +109,41 @@ def getAllPlanes(request):
         'planes': serializer.data
     })
 
+@api_view(['GET'])
+def get_plane(request, pk):
+
+    plane = get_object_or_404(Plane, id=pk)
+    
+    serializer = PlaneSerializer(plane, many=False)
+    
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def create_plane(request):
+
+    request.data['added_by'] = request.user
+    data = request.data
+
+    current_location = Airport.objects.get(id=data["current_location"])
+
+    data = {**data, "current_location": current_location}
+
+    plane = Plane.objects.create(**data)
+    
+    serializer = PlaneSerializer(plane, many=False)
+    
+    return Response(serializer.data)
 
 # =======
 # DUTY
 # =======
 
 @api_view(['POST'])
-def createDuty(request):
+def create_duty(request):
+
     request.data['added_by'] = request.user
     data = request.data
+
     duty = Duty.objects.create(**data)
     
     serializer = DutySerializer(duty, many=False)
@@ -109,7 +156,7 @@ def createDuty(request):
 # =======
 
 @api_view(['POST'])
-def createLeg(request):
+def create_leg(request):
 
     request.data['added_by'] = request.user
     data = request.data
@@ -131,7 +178,7 @@ def createLeg(request):
 # =======
 
 @api_view(['POST'])
-def uploadReceipt(request):
+def upload_receipt(request):
 
     receipt = request.FILES['img_file']
 

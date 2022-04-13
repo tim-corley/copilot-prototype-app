@@ -35,6 +35,7 @@ class Airport(models.Model):
     lon_radian = models.FloatField()
     point_standard = gismodels.PointField(default=Point(0.0, 0.0))
     point_radian = gismodels.PointField(default=Point(0.0, 0.0))
+    added_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
     def save(self, *args, **kwargs):
 
