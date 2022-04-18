@@ -43,8 +43,6 @@ class DutySerializer(serializers.ModelSerializer):
 
 
 class ReceiptSerializer(serializers.ModelSerializer):
-    # added_by = UserCreateSerializer(many=False, read_only=True)
-    # duty = DutySerializer(many=False, read_only=True)
     class Meta:
         model = Receipt
         fields = '__all__'

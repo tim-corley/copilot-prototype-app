@@ -45,7 +45,6 @@ def get_all_airports(request):
         'airports': serializer.data
     })
 
-
 @api_view(['GET'])
 def get_closest_airports(request):
 
@@ -206,6 +205,19 @@ def delete_plane(request, pk):
 # DUTY
 # =======
 
+@api_view(['GET'])
+def get_duty(request, pk):
+
+    duty = get_object_or_404(Duty, id=pk)
+    
+    legs = Leg.objects.filter(duty=pk)
+
+    legs = LegSerializer(legs, many=True)
+
+    serializer = DutySerializer(duty, many=False)
+    
+    return Response({'duty': serializer.data, 'legs': legs.data})
+
 @api_view(['POST'])
 def create_duty(request):
 
@@ -217,6 +229,36 @@ def create_duty(request):
     serializer = DutySerializer(duty, many=False)
     
     return Response(serializer.data)
+
+@api_view(['PUT'])
+def update_duty(request, pk):
+    duty = get_object_or_404(Duty, id=pk)
+
+    if duty.added_by != request.user:
+        return Response({'message': 'You do not have permission to update this duty.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    duty.oil_add = request.data['oil_add']
+    duty.start_hobbs = request.data['start_hobbs']
+    duty.end_hobbs = request.data['end_hobbs']
+    duty.start_time = request.data['start_time']
+    duty.end_time = request.data['end_time']
+    
+    duty.save()
+    
+    serializer = DutySerializer(duty, many=False)
+    
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+def delete_duty(request, pk):
+    duty = get_object_or_404(Duty, id=pk)
+
+    if duty.added_by != request.user:
+        return Response({'message': 'You do not have permission to remove this duty.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    duty.delete()
+    
+    return Response({ 'message': 'Duty has successfully been deleted.' }, status=status.HTTP_200_OK)
 
 
 # =======
