@@ -154,12 +154,29 @@ def get_plane(request, pk):
 def create_plane(request):
 
     request.data['added_by'] = request.user
+    
+    plane_image = request.FILES['img_file']
+
+    isValidFile = validate_img_file_extention(plane_image.name)
+
+    if not isValidFile:
+        return Response({'error': 'Please ensure file for the plane image is common image type (i.e. JPG, PNG).'}, status=status.HTTP_400_BAD_REQUEST)
+
+    full_s3_bucket_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{PlaneStorage.location}/" 
+
     data = request.data
 
-    current_location = Airport.objects.get(id=data["current_location"])
+    img_file_handle = plane_image
+    print(f"===\nS3: \n{full_s3_bucket_url}\n---\nIMG FILE HANDLE: \n{img_file_handle}\n===")
+    location_data = int(data["current_location"])
+    current_location = Airport.objects.get(id=location_data)
 
-    data = {**data, "current_location": current_location}
+    # REMOVE 'img_file' KEY/VALUE FROM DATA
+    new_data = dict(filter(lambda elem: elem[0] != 'img_file', data.items()))
 
+    data = {**new_data, "added_by": request.user, "current_location": current_location, "img_file_handle": img_file_handle}
+
+    print(f">>>\n\n{data}\n\n>>>")
     plane = Plane.objects.create(**data)
     
     serializer = PlaneSerializer(plane, many=False)
@@ -214,9 +231,9 @@ def get_duty(request, pk):
 
     legs = LegSerializer(legs, many=True)
 
-    serializer = DutySerializer(duty, many=False)
+    duty = DutySerializer(duty, many=False)
     
-    return Response({'duty': serializer.data, 'legs': legs.data})
+    return Response({'duty': duty.data, 'legs': legs.data})
 
 @api_view(['POST'])
 def create_duty(request):
@@ -265,6 +282,15 @@ def delete_duty(request, pk):
 # LEG
 # =======
 
+@api_view(['GET'])
+def get_leg(request, pk):
+
+    leg = get_object_or_404(Leg, id=pk)
+    
+    leg = LegSerializer(leg, many=False)
+
+    return Response(leg.data)
+
 @api_view(['POST'])
 def create_leg(request):
 
@@ -282,6 +308,40 @@ def create_leg(request):
     serializer = LegSerializer(leg, many=False)
     
     return Response(serializer.data)
+
+@api_view(['PUT'])
+def update_leg(request, pk):
+    leg = get_object_or_404(Leg, id=pk)
+
+    if leg.added_by != request.user:
+        return Response({'message': 'You do not have permission to update this leg.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    plane = Plane.objects.get(id=request.data["plane"])
+    duty = Duty.objects.get(id=request.data["duty"])
+
+    leg.depart_time = request.data['depart_time']
+    leg.depart_location = request.data['depart_location']
+    leg.arrival_time = request.data['arrival_time']
+    leg.arrival_location = request.data['arrival_location']
+    leg.plane = plane
+    leg.duty = duty
+    
+    leg.save()
+    
+    serializer = LegSerializer(leg, many=False)
+    
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+def delete_leg(request, pk):
+    leg = get_object_or_404(Leg, id=pk)
+
+    if leg.added_by != request.user:
+        return Response({'message': 'You do not have permission to remove this leg.'}, status=status.HTTP_403_FORBIDDEN)
+    
+    leg.delete()
+    
+    return Response({ 'message': 'Leg has successfully been deleted.' }, status=status.HTTP_200_OK)
 
 # =======
 # RECEIPT

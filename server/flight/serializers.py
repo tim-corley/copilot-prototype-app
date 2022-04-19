@@ -21,6 +21,7 @@ class AirportLocatorSerializer(serializers.ModelSerializer):
 
 
 class PlaneSerializer(serializers.ModelSerializer):
+    current_location = AirportSerializer(many=False, read_only=True)
     class Meta:
         model = Plane
         fields = '__all__'

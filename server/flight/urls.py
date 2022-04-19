@@ -18,5 +18,8 @@ urlpatterns = [
     path('duty/<str:pk>/delete/', views.delete_duty, name='delete_duty'),
     path('duty/<str:pk>/', views.get_duty, name='get_duty'),
     path('leg/new/', views.create_leg, name='create_leg'),
+    path('leg/<str:pk>/update/', views.update_leg, name='update_leg'),
+    path('leg/<str:pk>/delete/', views.delete_leg, name='delete_leg'),
+    path('leg/<str:pk>/', views.get_leg, name='get_leg'),
     path('receipt/upload/', views.upload_receipt, name='upload_receipt'),
 ]
