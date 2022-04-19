@@ -21,6 +21,7 @@ class AirportLocatorSerializer(serializers.ModelSerializer):
 
 
 class PlaneSerializer(serializers.ModelSerializer):
+    current_location = AirportSerializer(many=False, read_only=True)
     class Meta:
         model = Plane
         fields = '__all__'
@@ -43,8 +44,6 @@ class DutySerializer(serializers.ModelSerializer):
 
 
 class ReceiptSerializer(serializers.ModelSerializer):
-    # added_by = UserCreateSerializer(many=False, read_only=True)
-    # duty = DutySerializer(many=False, read_only=True)
     class Meta:
         model = Receipt
         fields = '__all__'
