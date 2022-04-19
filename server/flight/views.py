@@ -162,21 +162,16 @@ def create_plane(request):
     if not isValidFile:
         return Response({'error': 'Please ensure file for the plane image is common image type (i.e. JPG, PNG).'}, status=status.HTTP_400_BAD_REQUEST)
 
-    full_s3_bucket_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{PlaneStorage.location}/" 
-
     data = request.data
 
-    img_file_handle = plane_image
-    print(f"===\nS3: \n{full_s3_bucket_url}\n---\nIMG FILE HANDLE: \n{img_file_handle}\n===")
     location_data = int(data["current_location"])
     current_location = Airport.objects.get(id=location_data)
 
-    # REMOVE 'img_file' KEY/VALUE FROM DATA
+    # REMOVE 'img_file' KEY/VALUE FROM DATA SO SPEAD OPERATOR CAN BE USED
     new_data = dict(filter(lambda elem: elem[0] != 'img_file', data.items()))
 
-    data = {**new_data, "added_by": request.user, "current_location": current_location, "img_file_handle": img_file_handle}
+    data = {**new_data, "added_by": request.user, "current_location": current_location, "img_file_handle": plane_image}
 
-    print(f">>>\n\n{data}\n\n>>>")
     plane = Plane.objects.create(**data)
     
     serializer = PlaneSerializer(plane, many=False)
@@ -360,13 +355,10 @@ def upload_receipt(request):
     if not isValidFile:
         return Response({'error': 'Please ensure file is common image type (i.e. JPG, PNG).'}, status=status.HTTP_400_BAD_REQUEST)
 
-    full_s3_bucket_url = f"https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{ReceiptStorage.location}/" 
-
     data = request.data
     duty = Duty.objects.get(id=data["duty"])
-    img_file_handle = receipt
 
-    data = {"img_file_handle": full_s3_bucket_url + str(img_file_handle), "duty": duty, "added_by": request.user}
+    data = {"img_file_handle": receipt, "duty": duty, "added_by": request.user}
 
     receipt = Receipt.objects.create(**data)
 
