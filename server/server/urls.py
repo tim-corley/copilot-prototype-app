@@ -48,6 +48,7 @@ urlpatterns += [
     url(r'^auth/', include('djoser.urls.jwt')),
     # Flight endpoints
     path('flight/', include('flight.urls')),
+    path('account/', include('accounts.urls'))
 ]
 
 # handler404 = 'utils.error_views.handler404'
