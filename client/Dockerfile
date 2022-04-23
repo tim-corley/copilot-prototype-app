@@ -2,7 +2,7 @@ FROM node:lts-alpine
 
 WORKDIR /src
 
-EXPOSE 3000
+EXPOSE 3003
 
 RUN apk update \
     && apk upgrade \

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "storages",
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "djoser",
     "drf_yasg",
     "flight.apps.FlightConfig",
