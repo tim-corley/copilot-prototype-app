@@ -32,6 +32,8 @@ export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|Error
           },
         }
       );
+      console.log('TOKEN RES: ', response);
+      
       if (response.data.access) {
         return res.status(200).json({ success: true, tokenData: response.data });
       } else {
@@ -40,14 +42,16 @@ export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|Error
         });
       }
     } catch (error) {
+      console.error('TOKEN ERR: ', error);
+
       if (axios.isAxiosError(error) && error.response) {
         console.log('axios error: ', error.message);
-        res.status(error.response.status).json({
+        res.status(404).json({
           error: error.message
         });
       } else {
         console.log('unexpected error: ', error.response);
-        res.status(error.response.status).json({
+        res.status(404).json({
           error: error.response && error.response.data.error,
         });
       }

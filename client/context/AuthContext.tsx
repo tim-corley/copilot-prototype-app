@@ -30,9 +30,11 @@ export interface IAuthContextProps {
     isAuthenticated: boolean;
     loading: boolean;
     user: IUser | null;
-    login: (email: string, password: string) => Promise<Response>;
+    error: string | null;
+    login: (email: string, password: string) => {};
     logout: () => void;
-    getToken: () => Promise<string>;
+    getToken: () => Promise<string | null>;
+    clearErrors: () => void;
 }
 
 // // Intended to pass into createContext but not sure how to define default vals for
@@ -48,7 +50,7 @@ export interface IAuthContextProps {
 
 const AuthContext = createContext<Partial<IAuthContextProps>>({});
 
-export const AuthProvider = ({ children }: IAuthProviderProps): ReactNode => {
+export const AuthProvider = ({ children }: IAuthProviderProps) => {
     const [loading, setLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState<IUser | null>(null);
@@ -125,7 +127,7 @@ export const AuthProvider = ({ children }: IAuthProviderProps): ReactNode => {
       setLoading(false);
     }
 
-    const login = async ({ email, password }: ILogin) => {
+    const login = async (email: string, password: string): Promise<void> => {
         try {
             setLoading(true);
             const res = await axios.post("api/auth/token", {
@@ -136,7 +138,7 @@ export const AuthProvider = ({ children }: IAuthProviderProps): ReactNode => {
               const tokenData = await res.data.tokenData
               handleNewToken(tokenData);
               await initUser(tokenData.access);
-              router.push("/");
+              // router.push("/");
             } else {
               setIsAuthenticated(false);
               setLoading(false);
@@ -175,16 +177,29 @@ export const AuthProvider = ({ children }: IAuthProviderProps): ReactNode => {
       setNotAuthenticated();
     };
 
+    const clearErrors = () => {
+      setError(null);
+    };
+
     const value = {
       isAuthenticated,
       user,
       loading,
+      error,
       login,
       logout,
       getToken,
+      clearErrors,
     };
   
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return (
+      <AuthContext.Provider
+        value={value}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
   };
   
-  export const useAuth = (): any => useContext(AuthContext);
+export const useAuth = (): any => useContext(AuthContext);
+
