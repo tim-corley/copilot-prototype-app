@@ -12,10 +12,7 @@ const Login = () => {
 
   const router = useRouter();
 
-  const { loading, error, isAuthenticated, login, clearErrors } = useAuth()
-
-  console.log('test: ', loading);
-  
+  const { loading, error, isAuthenticated, login, clearErrors } = useAuth()  
 
   useEffect(() => {
     if (error) {

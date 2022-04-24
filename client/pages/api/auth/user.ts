@@ -23,14 +23,14 @@ type ErrorRes = {
 // TODO need to get accessToken from authcontext -> trying to pass as header
 export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|ErrorRes>) => {
   const url =`${process.env.API_URL}/auth/users/me/`
-  if (req.method === "GET") {
-    const token = req.headers.authorization;
+  if (req.method === "POST") {
+    const { accessToken } = req.body;
     try {
       const response = await axios.get(
         url,
         {
           headers: {
-            "Authorization": `JWT ${token}`,
+            "Authorization": `JWT ${accessToken}`,
           },
         }
       );

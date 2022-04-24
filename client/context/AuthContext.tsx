@@ -91,11 +91,9 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
       initAuth();
     }, []);
 
-    const initUser = async (token: string): Promise<void> => {
-      const resp = await axios.get("api/auth/user", {
-        headers: {
-          'Authorization': `JWT ${accessToken}`
-        }
+    const initUser = async (accessToken: string): Promise<void> => {
+      const resp = await axios.post("api/auth/user", {
+        accessToken
       });
       const user = await resp.data.user;
       setUser(user);

@@ -18,7 +18,7 @@ type ErrorRes = {
 export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|ErrorRes>) => {
   const url =`${process.env.API_URL}/auth/jwt/create/`
   if (req.method === "POST") {
-    const { email, password } = req.body;
+        const { email, password } = req.body;
     try {
       const response = await axios.post(
         url,
@@ -28,11 +28,11 @@ export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|Error
         },
         {
           headers: {
-            "Context-Type": "application/json",
+            "Content-Type": "application/json",
           },
         }
       );
-      console.log('TOKEN RES: ', response);
+      // console.log('TOKEN RES: ', response);
       
       if (response.data.access) {
         return res.status(200).json({ success: true, tokenData: response.data });
@@ -42,7 +42,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|Error
         });
       }
     } catch (error) {
-      console.error('TOKEN ERR: ', error);
+      // console.error('TOKEN ERR: ', error);
 
       if (axios.isAxiosError(error) && error.response) {
         console.log('axios error: ', error.message);

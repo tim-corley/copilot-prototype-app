@@ -21,7 +21,7 @@ export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|Error
         },
         {
           headers: {
-            "Context-Type": "application/json",
+            "Content-Type": "application/json",
           },
         }
       );
