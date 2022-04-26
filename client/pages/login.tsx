@@ -1,10 +1,13 @@
 import Layout from "../components/layout/Layout";
-import Login from "../components/auth/Login";
+import Container from "../components/layout/LoginContainer";
+import Form from "../components/auth/Form";
 
 export default function LoginPage() {
   return (
     <Layout title="Login">
-      <Login />
+      <Container>
+        <Form />
+      </Container>
     </Layout>
   );
 }

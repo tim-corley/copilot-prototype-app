@@ -12,7 +12,7 @@ const Login = () => {
 
   const router = useRouter();
 
-  const { loading, error, isAuthenticated, login, clearErrors } = useAuth()  
+  const { loading, error, isAuthenticated, login, clearErrors } = useAuth();
 
   useEffect(() => {
     if (error) {
@@ -25,7 +25,7 @@ const Login = () => {
     }
   }, [isAuthenticated, error, loading]);
 
-  const submitHandler = (e) => {
+  const submitHandler = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     login(email, password);
   };
