@@ -3,6 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   env: {
     API_URL: "http://server:8000",
+    ENV: "develop",
   },
 };
 

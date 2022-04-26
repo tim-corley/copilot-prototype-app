@@ -1,5 +1,6 @@
 import axios from "axios";
-import type { NextApiRequest, NextApiResponse } from 'next'
+import cookie from "cookie";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 interface IToken {
   refresh: string;
@@ -7,23 +8,27 @@ interface IToken {
 }
 
 type SuccessRes = {
-  success: boolean
-  tokenData: IToken
-}
+  success: boolean;
+  tokenData: IToken;
+};
 
 type ErrorRes = {
-  error: string
-}
+  error: string;
+};
 
-export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|ErrorRes>) => {
-  const url =`${process.env.API_URL}/auth/jwt/refresh/`
+// USE REFRESH TOKEN TO OBTAIN NEW ACCESS TOKEN
+export default async (
+  req: NextApiRequest,
+  res: NextApiResponse<SuccessRes | ErrorRes>
+) => {
+  const url = `${process.env.API_URL}/auth/jwt/refresh/`;
   if (req.method === "POST") {
     const { refreshToken } = req.body;
     try {
       const response = await axios.post(
         url,
         {
-          refreshToken
+          refreshToken,
         },
         {
           headers: {
@@ -32,27 +37,40 @@ export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|Error
         }
       );
       if (response.data.access) {
-        let tokenData = {refresh: refreshToken, access: response.data.access}
+        let tokenData = {
+          refresh: refreshToken,
+          access: response.data.access,
+        };
         return res.status(200).json({ success: true, tokenData });
       } else {
         res.status(response.status).json({
           error: "(Refresh) Authentication failed.",
         });
       }
-  // https://bobbyhadz.com/blog/typescript-catch-clause-variable-type-annotation-must-be 
-  // https://www.neldeles.com/blog/posts/handling-axios-errors-in-typescript  
-  } catch (error) {
+      // https://bobbyhadz.com/blog/typescript-catch-clause-variable-type-annotation-must-be
+      // https://www.neldeles.com/blog/posts/handling-axios-errors-in-typescript
+    } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        console.log('axios error: ', error.message);
+        console.log("axios error: ", error.message);
         res.status(error.response.status).json({
-          error: error.message
+          error: error.message,
         });
       } else {
-        console.log('unexpected error: ', error.response);
+        console.log("unexpected error: ", error.response);
         res.status(error.response.status).json({
           error: error.response && error.response.data.error,
         });
       }
+    }
+  } else if (req.method === "GET") {
+    const cookies = cookie.parse(req.headers.cookie || "");
+    const refresh = cookies.refresh || false;
+    if (!refresh) {
+      return res.status(401).json({
+        message: "User must login.",
+      });
+    } else {
+      return res.status(200).json({ refresh });
     }
   }
 };

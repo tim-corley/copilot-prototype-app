@@ -7,6 +7,7 @@ import {
   Button,
 } from "@chakra-ui/react";
 import * as yup from "yup";
+import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuth } from "../../context/AuthContext";
@@ -32,6 +33,8 @@ export default function Form() {
     resolver: yupResolver(schema),
   });
 
+  const router = useRouter();
+
   const { loading, error, isAuthenticated, login, clearErrors } = useAuth();
 
   useEffect(() => {
@@ -41,7 +44,6 @@ export default function Form() {
     }
 
     if (isAuthenticated && !loading) {
-      // router.push("/");
       console.log("USER IS VALID!");
     }
   }, [isAuthenticated, error, loading]);

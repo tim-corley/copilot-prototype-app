@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { NextApiRequest, NextApiResponse } from 'next'
+import type { NextApiRequest, NextApiResponse } from "next";
 
 interface IUser {
   id: string;
@@ -12,28 +12,28 @@ interface IUser {
 }
 
 type SuccessRes = {
-  success: boolean,
-  user: IUser
-}
+  success: boolean;
+  user: IUser;
+};
 
 type ErrorRes = {
-  error: string
-}
+  error: string;
+};
 
-// TODO need to get accessToken from authcontext -> trying to pass as header
-export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|ErrorRes>) => {
-  const url =`${process.env.API_URL}/auth/users/me/`
+// GET USER DATA FROM VALID ACCESS TOKEN
+export default async (
+  req: NextApiRequest,
+  res: NextApiResponse<SuccessRes | ErrorRes>
+) => {
+  const url = `${process.env.API_URL}/auth/users/me/`;
   if (req.method === "POST") {
     const { accessToken } = req.body;
     try {
-      const response = await axios.get(
-        url,
-        {
-          headers: {
-            "Authorization": `JWT ${accessToken}`,
-          },
-        }
-      );
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `JWT ${accessToken}`,
+        },
+      });
       if (response.data.id) {
         return res.status(200).json({ success: true, user: response.data });
       } else {
@@ -43,12 +43,12 @@ export default async (req: NextApiRequest, res: NextApiResponse<SuccessRes|Error
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        console.log('axios error: ', error.message);
+        console.log("axios error: ", error.message);
         res.status(error.response.status).json({
-          error: error.message
+          error: error.message,
         });
       } else {
-        console.log('unexpected error: ', error.response);
+        console.log("unexpected error: ", error.response);
         res.status(error.response.status).json({
           error: error.response && error.response.data.error,
         });
