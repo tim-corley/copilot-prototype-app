@@ -1,7 +1,6 @@
 import axios from "axios";
 import cookie from "cookie";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { json } from "stream/consumers";
 
 interface IToken {
   refresh: string;
@@ -32,11 +31,7 @@ export default async (
 ) => {
   const url = `${process.env.API_URL}/auth/jwt/refresh/`;
   if (req.method === "POST") {
-    console.log("\nREQ BODY:\n", req.body);
-
     const { cookie_resp } = req.body;
-    console.log("API RE-TOKEN: ", cookie_resp);
-
     try {
       const response = await axios.post(
         url,

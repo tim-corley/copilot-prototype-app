@@ -61,37 +61,30 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<IUser | null>(null);
   const [accessToken, setAccessToken] = useState<string>("");
-  const [refreshToken, setRefreshToken] = useState<string>("");
   const [error, setError] = useState(null);
 
   const router = useRouter();
 
-  const setNotAuthenticated = (): void => {
-    setIsAuthenticated(false);
-    setLoading(false);
-    setUser(null);
-  };
-
-  const verifyAccessToken = async (): Promise<boolean> => {
+  // IF NO ACCESS TOKEN, FALSE
+  // IF ACCESS TOKEN, SEND TO VERIFY ENDPOINT
+  const accessTokenIsValid = async (): Promise<boolean> => {
+    if (accessToken === "") {
+      return false;
+    }
     const resp = await axios.post("api/auth/verify", {
       accessToken,
     });
     return resp.data.isAuthenticated;
   };
 
-  const accessTokenIsValid = (): boolean | Promise<boolean> => {
-    if (accessToken === "") {
-      return false;
-    } else {
-      return verifyAccessToken();
-    }
-  };
-
+  // CHECK IF ACCESS TOKEN (IN MEMORY) IS VALID
+  // IF SO SET IS AUTH
+  // IF NOT, GET A NEW TOKEN
   const initAuth = async (): Promise<void> => {
     setLoading(true);
-    if (!accessTokenIsValid()) {
-      console.log("Invalid or missing access token so refetching");
-      await fetchNewToken();
+    if (!!accessTokenIsValid()) {
+      console.log("Invalid access token. Attempting to refresh.");
+      await refreshAccessToken();
     } else {
       setIsAuthenticated(true);
       setLoading(false);
@@ -111,51 +104,50 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
   };
 
   // GET REFRESH TOKEN FROM COOKIE
-  const fetchRefreshCookie = async (): Promise<void> => {
+  const fetchRefreshCookie = async (): Promise<string | undefined> => {
     const resp = await axios.get("api/auth/refresh");
     // TODO HANDLE CASE FOR NO REFRESH TOKEN IN COOKIE - USER MUST LOGIN
     if (resp.data.refresh) {
-      setRefreshToken(resp.data.refresh);
-    }
-  };
-
-  // PASSING VALID REFRESH TOKEN TO refresh/ RETURNS NEW ACCESS TOKEN
-  // REFRESHTOKEN STATE VALUE IS SET TO EMPTY ON PAGE RELOADS
-  // WILL CHECK STATE & THEN COOKIE FOR REFRESH TOKEN
-  // IF NO REFRESH TOKENS FOUND, USER MUST LOGIN (TODO)
-  const fetchNewToken = async (): Promise<void | null> => {
-    setLoading(true);
-    if (refreshToken === "") {
-      await fetchRefreshCookie();
-    }
-    // TODO HANDLE CASE FOR NO REFRESH TOKEN IN COOKIE - USER MUST LOGIN
-    if (refreshToken !== "") {
-      // TODO FIX HERE
-      const resp = await axios.post("api/auth/refresh", {
-        refreshToken,
-      });
-      if (!resp.data.tokenData) {
-        console.log("---here---");
-        setNotAuthenticated();
-        return null;
-      }
-      handleNewToken(resp.data.tokenData);
-      if (user === null) {
-        console.log("No user loaded so loading from refreshed token");
-        await initUser(resp.data.tokenData.access);
-      }
-      return resp.data.tokenData.access;
+      return resp.data.refresh;
     } else {
-      console.log("OOPS");
+      return;
     }
   };
 
-  const handleNewToken = (data: ITokenResponse): void => {
-    console.log("HANDLING NEW TOKEN...");
-    setAccessToken(data.access);
-    setRefreshToken(data.refresh);
+  // USE REFRESH TOKEN TO GET NEW ACCESS TOKEN
+  const refreshAccessToken = async (): Promise<string | undefined> => {
+    setLoading(true);
+    const cookie_resp = await fetchRefreshCookie();
+    // NO REFRESH COOKIE IS SET
+    if (!cookie_resp) {
+      setNotAuthenticated();
+      return;
+    }
+    const token_resp = await axios.post("api/auth/refresh", {
+      cookie_resp,
+    });
+    if (!token_resp.data.tokenData) {
+      setNotAuthenticated();
+      return;
+    }
+    handleNewToken(token_resp.data.tokenData.access);
+    if (user === null) {
+      console.log("No user loaded. Fetching user data from refreshed token");
+      await initUser(token_resp.data.tokenData.access);
+    }
+    return token_resp.data.tokenData.access;
+  };
+
+  const handleNewToken = (accessToken: string): void => {
+    setAccessToken(accessToken);
     setIsAuthenticated(true);
     setLoading(false);
+  };
+
+  const setNotAuthenticated = (): void => {
+    setIsAuthenticated(false);
+    setLoading(false);
+    setUser(null);
   };
 
   const login = async (email: string, password: string): Promise<void> => {
@@ -166,13 +158,12 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
         password,
       });
       if (res.data.success) {
-        const tokenData = await res.data.tokenData;
-        handleNewToken(tokenData);
-        await initUser(tokenData.access);
+        const accessToken = res.data.tokenData.access;
+        handleNewToken(accessToken);
+        await initUser(accessToken);
         router.push("/");
       } else {
-        setIsAuthenticated(false);
-        setLoading(false);
+        setNotAuthenticated();
       }
     } catch (error) {
       setLoading(false);
@@ -183,32 +174,32 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
     }
   };
 
-  const getToken = async (): Promise<string | null> => {
-    // Returns an access token if there's one or refetches a new one
-    console.log("Getting access token..");
-    if (await accessTokenIsValid()) {
-      console.log("Getting access token.. existing token still valid");
-      return Promise.resolve(accessToken);
-    } else if (loading) {
-      while (loading) {
-        console.log("Getting access token.. waiting for token to be refreshed");
-      }
-      // Assume this means the token is in the middle of refreshing
-      return Promise.resolve(accessToken);
-    } else {
-      console.log("Getting access token.. getting a new token");
-      const token = await fetchNewToken();
-      return token;
-    }
-  };
+  // const getToken = async (): Promise<string | null> => {
+  //   // Returns an access token if there's one or refetches a new one
+  //   console.log("Getting access token..");
+  //   if (await accessTokenIsValid()) {
+  //     console.log("Getting access token.. existing token still valid");
+  //     return Promise.resolve(accessToken);
+  //   } else if (loading) {
+  //     while (loading) {
+  //       console.log("Getting access token.. waiting for token to be refreshed");
+  //     }
+  //     // Assume this means the token is in the middle of refreshing
+  //     return Promise.resolve(accessToken);
+  //   } else {
+  //     console.log("Getting access token.. getting a new token");
+  //     const token = await fetchNewToken();
+  //     return token;
+  //   }
+  // };
 
   const logout = async (): Promise<void> => {
     try {
       setLoading(true);
       const res = await axios.post("api/auth/logout");
       if (res.data.success) {
+        setLoading(false);
         setAccessToken("");
-        setRefreshToken("");
         setNotAuthenticated();
       } else {
         setLoading(false);
@@ -234,7 +225,6 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
     error,
     login,
     logout,
-    getToken,
     clearErrors,
   };
 
