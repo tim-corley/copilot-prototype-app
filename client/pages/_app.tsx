@@ -7,7 +7,7 @@ import { customTheme } from "../themes/index";
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
-      <ChakraProvider theme={customTheme}>
+      <ChakraProvider resetCSS theme={customTheme}>
         <Component {...pageProps} />
       </ChakraProvider>
     </AuthProvider>

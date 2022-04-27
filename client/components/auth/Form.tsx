@@ -44,7 +44,7 @@ export default function Form() {
     }
 
     if (isAuthenticated && !loading) {
-      console.log("USER IS VALID!");
+      router.push("/");
     }
   }, [isAuthenticated, error, loading]);
 

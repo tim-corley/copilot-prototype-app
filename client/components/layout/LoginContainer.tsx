@@ -9,11 +9,11 @@ import {
   VStack,
 } from "@chakra-ui/react";
 
-type IContainerProps = {
+type ContainerProps = {
   children: ReactNode;
 };
 
-const Container = ({ children }: IContainerProps) => {
+const Container = ({ children }: ContainerProps) => {
   return (
     <Center height="100vh" width="100vw">
       <Box background="gray.50" borderRadius="md" shadow="md" padding="6">

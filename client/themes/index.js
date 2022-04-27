@@ -14,13 +14,16 @@ export const customTheme = extendTheme(
       body: "poppins",
     },
     colors: {
+      brand: {
+        900: "#5386e4",
+      },
       primary: {
         50: "#f5e7ff",
         100: "#dabcf8",
         200: "#c091ef",
         300: "#a765e7",
         400: "#8e39df",
-        500: "#7420c6",
+        500: "#5386e4",
         600: "#5a189a",
         700: "#40106f",
         800: "#270844",

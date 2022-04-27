@@ -1,12 +1,18 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import Head from "next/head";
 import Header from "./Header";
 import Footer from "./Footer";
+import NavBar from "./NavBar";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const Layout = ({ children, title = "CoPilot | Welcome!" }) => {
+type LayoutProps = {
+  children: ReactNode;
+  title: string;
+};
+
+const Layout = ({ children, title = "CoPilot | Welcome!" }: LayoutProps) => {
   return (
     <div>
       <Head>
@@ -15,7 +21,7 @@ const Layout = ({ children, title = "CoPilot | Welcome!" }) => {
 
       <ToastContainer position="bottom-right" />
 
-      <Header />
+      <NavBar />
       {children}
       <Footer />
     </div>
