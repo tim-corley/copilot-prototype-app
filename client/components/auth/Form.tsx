@@ -10,7 +10,7 @@ import * as yup from "yup";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext2";
 import { toast } from "react-toastify";
 
 const schema = yup.object().shape({

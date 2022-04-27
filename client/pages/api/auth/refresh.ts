@@ -1,6 +1,7 @@
 import axios from "axios";
 import cookie from "cookie";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { json } from "stream/consumers";
 
 interface IToken {
   refresh: string;
@@ -16,19 +17,31 @@ type ErrorRes = {
   error: string;
 };
 
+type NoTokenRes = {
+  message: string;
+};
+
+type ExistTokenRes = {
+  refresh: string;
+};
+
 // USE REFRESH TOKEN TO OBTAIN NEW ACCESS TOKEN
 export default async (
   req: NextApiRequest,
-  res: NextApiResponse<SuccessRes | ErrorRes>
+  res: NextApiResponse<SuccessRes | ErrorRes | NoTokenRes | ExistTokenRes>
 ) => {
   const url = `${process.env.API_URL}/auth/jwt/refresh/`;
   if (req.method === "POST") {
-    const { refreshToken } = req.body;
+    console.log("\nREQ BODY:\n", req.body);
+
+    const { cookie_resp } = req.body;
+    console.log("API RE-TOKEN: ", cookie_resp);
+
     try {
       const response = await axios.post(
         url,
         {
-          refreshToken,
+          refresh: cookie_resp,
         },
         {
           headers: {
@@ -38,7 +51,7 @@ export default async (
       );
       if (response.data.access) {
         let tokenData = {
-          refresh: refreshToken,
+          refresh: cookie_resp,
           access: response.data.access,
         };
         return res.status(200).json({ success: true, tokenData });
@@ -65,12 +78,10 @@ export default async (
   } else if (req.method === "GET") {
     const cookies = cookie.parse(req.headers.cookie || "");
     const refresh = cookies.refresh || false;
-    if (!refresh) {
-      return res.status(401).json({
-        message: "User must login.",
-      });
-    } else {
+    if (refresh) {
       return res.status(200).json({ refresh });
+    } else {
+      return res.json({ message: "No refresh token cookie. User must login." });
     }
   }
 };
