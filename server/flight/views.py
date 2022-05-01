@@ -230,7 +230,7 @@ def get_duty(request, pk):
     
     return Response({'duty': duty.data, 'legs': legs.data})
 
-@api_view(['POST'])
+@api_view(['GET'])
 def create_duty(request):
 
     request.data['added_by'] = request.user

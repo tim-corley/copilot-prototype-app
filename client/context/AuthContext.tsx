@@ -39,7 +39,7 @@ export interface IAuthContextProps {
   error: string | null;
   login: (email: string, password: string) => {};
   logout: () => void;
-  getToken: () => Promise<string | null>;
+  getToken: () => Promise<string | undefined>;
   clearErrors: () => void;
 }
 
@@ -174,24 +174,23 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
     }
   };
 
-  // const getToken = async (): Promise<string | null> => {
-  //   // Returns an access token if there's one or refetches a new one
-  //   console.log("Getting access token..");
-  //   if (await accessTokenIsValid()) {
-  //     console.log("Getting access token.. existing token still valid");
-  //     return Promise.resolve(accessToken);
-  //   } else if (loading) {
-  //     while (loading) {
-  //       console.log("Getting access token.. waiting for token to be refreshed");
-  //     }
-  //     // Assume this means the token is in the middle of refreshing
-  //     return Promise.resolve(accessToken);
-  //   } else {
-  //     console.log("Getting access token.. getting a new token");
-  //     const token = await fetchNewToken();
-  //     return token;
-  //   }
-  // };
+  const getToken = async (): Promise<string | undefined> => {
+    // Returns an access token if there's one or refetches a new one
+    console.log("Getting access token..");
+    if (await accessTokenIsValid()) {
+      console.log("Getting access token.. existing token still valid");
+      return accessToken;
+    } else if (loading) {
+      while (loading) {
+        console.log("Getting access token.. waiting for token to be refreshed");
+      }
+      // Assume this means the token is in the middle of refreshing
+      return Promise.resolve(accessToken);
+    } else {
+      console.log("Getting access token.. getting a new token");
+      return refreshAccessToken();
+    }
+  };
 
   const logout = async (): Promise<void> => {
     try {
@@ -225,6 +224,7 @@ export const AuthProvider = ({ children }: IAuthProviderProps) => {
     error,
     login,
     logout,
+    getToken,
     clearErrors,
   };
 

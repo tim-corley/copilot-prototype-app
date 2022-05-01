@@ -1,37 +1,47 @@
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 
+interface IDuty {
+  id: string;
+  oil_add: number | null;
+  start_hobbs: number | null;
+  end_hobbs: number | null;
+  start_time: string | null;
+  end_time: string | null;
+  created_at: string;
+  updated_at: string;
+  added_by: number;
+}
+
 type SuccessRes = {
-  isAuthenticated: boolean;
+  success: boolean;
+  duty: IDuty;
 };
 
 type ErrorRes = {
   error: string;
 };
-// VERIFY AN ACCESS TOKEN
+
 export default async (
   req: NextApiRequest,
   res: NextApiResponse<SuccessRes | ErrorRes>
 ) => {
-  const url = `${process.env.API_URL}/auth/jwt/verify/`;
+  const url = `${process.env.API_URL}/flight/duty/new/`;
   if (req.method === "POST") {
     const { accessToken } = req.body;
+    console.log("\nAPI - Token: ", accessToken);
     try {
-      const response = await axios.post(
-        url,
-        {
-          token: accessToken,
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `JWT ${accessToken}`,
         },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (response.data.code == "token_not_valid") {
-        return res.status(401).json({ isAuthenticated: false });
+      });
+      if (response.data.id) {
+        return res.status(200).json({ success: true, duty: response.data });
       } else {
-        res.status(response.status).json({ isAuthenticated: true });
+        res.status(response.status).json({
+          error: "Failed to create new duty.",
+        });
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
