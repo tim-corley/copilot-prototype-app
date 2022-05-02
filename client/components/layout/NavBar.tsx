@@ -159,12 +159,7 @@ const NavBar = () => {
           ) : (
             <>
               <Link href="/login">
-                <Button
-                  as={"a"}
-                  fontSize={"sm"}
-                  fontWeight={400}
-                  variant={"link"}
-                >
+                <Button fontSize={"sm"} fontWeight={400} variant={"link"}>
                   Sign In
                 </Button>
               </Link>
