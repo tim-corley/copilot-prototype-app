@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import {
   Avatar,
@@ -39,7 +40,7 @@ const NavBar = () => {
   const { isOpen, onToggle } = useDisclosure();
   const [mounted, setMounted] = useState(false);
 
-  const { loading, user, logout } = useAuth();
+  const { loading, user, logout, getToken } = useAuth();
 
   const logoutHandler = () => {
     logout();
@@ -55,6 +56,16 @@ const NavBar = () => {
   }) as any;
 
   const color = useColorModeValue("gray.800", "white");
+
+  const handleNewDuty = async () => {
+    const accessToken: string = await getToken();
+    const resp = await axios.post("api/duty/new", {
+      accessToken,
+    });
+    if (resp.data?.success) {
+      router.push(`/duty/${encodeURIComponent(resp.data.duty.id)}`);
+    }
+  };
 
   return (
     <Box>
@@ -107,15 +118,16 @@ const NavBar = () => {
         >
           {user ? (
             <Flex alignItems={"center"}>
-              <Button
-                variant={"solid"}
-                colorScheme={"teal"}
-                size={"sm"}
-                mr={4}
-                leftIcon={<AddIcon />}
-              >
-                Action
-              </Button>
+              <Box fontSize={"lg"} mb={{ base: 8, md: 0 }}>
+                {user.is_admin && (
+                  <Link href="/admin" passHref>
+                    <Text>Control Center</Text>
+                  </Link>
+                )}
+                {user.is_staff && (
+                  <Text onClick={handleNewDuty}>Start New Duty</Text>
+                )}
+              </Box>
               <Menu>
                 <MenuButton
                   as={Button}
@@ -147,12 +159,7 @@ const NavBar = () => {
           ) : (
             <>
               <Link href="/login">
-                <Button
-                  as={"a"}
-                  fontSize={"sm"}
-                  fontWeight={400}
-                  variant={"link"}
-                >
+                <Button fontSize={"sm"} fontWeight={400} variant={"link"}>
                   Sign In
                 </Button>
               </Link>

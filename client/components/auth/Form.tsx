@@ -63,7 +63,7 @@ export default function Form() {
         </FormControl>
         <FormControl isInvalid={!!errors?.password?.message}>
           <FormLabel>Password</FormLabel>
-          <Input {...register("password")} />
+          <Input {...register("password")} type="password" />
           <FormErrorMessage>
             {errors.password && "Password must be at least 8 characters"}
           </FormErrorMessage>
