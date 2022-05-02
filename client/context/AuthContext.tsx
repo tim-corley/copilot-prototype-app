@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 
-type IAuthProviderProps = {
+type AuthProviderProps = {
   children: ReactNode;
 };
 
@@ -56,7 +56,7 @@ export interface IAuthContextProps {
 
 const AuthContext = createContext<Partial<IAuthContextProps>>({});
 
-export const AuthProvider = ({ children }: IAuthProviderProps) => {
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<IUser | null>(null);
