@@ -125,7 +125,19 @@ const NavBar = () => {
                   </Link>
                 )}
                 {user.is_staff && (
-                  <Text onClick={handleNewDuty}>Start New Duty</Text>
+                  <Button
+                    display={{ base: "none", md: "inline-flex" }}
+                    fontSize={"sm"}
+                    fontWeight={600}
+                    color={"white"}
+                    bg={"blue"}
+                    _hover={{
+                      bg: "brand.900",
+                    }}
+                    onClick={handleNewDuty}
+                  >
+                    Start New Duty
+                  </Button>
                 )}
               </Box>
               <Menu>
